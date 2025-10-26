@@ -52,7 +52,7 @@ def product_list_create(request):
         # ---- pagination ----
         paginator = SmallPaginator()
         page = paginator.paginate_queryset(qs, request)
-        serializer = ProductSerializer(page, many=True)
+        serializer = ProductSerializer(page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
 
     # POST

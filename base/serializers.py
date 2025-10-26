@@ -4,9 +4,11 @@ from .models import Product, Order, OrderItem, ShippingAddress
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
+from django.conf import settings
 
 class ProductSerializer(serializers.ModelSerializer):
     _id = serializers.IntegerField(source='id', read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -25,6 +27,17 @@ class ProductSerializer(serializers.ModelSerializer):
         if value < 0:
             raise serializers.ValidationError("countInStock must be ≥ 0.")
         return value
+    
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            image_url = obj.image.url
+            # If a request is available, build absolute URI
+            if request is not None:
+                return request.build_absolute_uri(image_url)
+            # Fallback if no request context is given
+            return f"{settings.MEDIA_URL}{obj.image}"
+        return None
 
 class ProductUpdateSerializer(serializers.ModelSerializer):
     _id = serializers.IntegerField(source='id', read_only=True)
